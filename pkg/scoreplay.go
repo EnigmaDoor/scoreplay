@@ -83,7 +83,6 @@ func InteractiveFetchData(opts *Options) (err error) {
 
 func InteractiveSelectData[T ScoreplayType] (data []T) string {
 	var question, answer string
-	validInput := false
 	reader := bufio.NewReader(os.Stdin)
 
 	for i := range data {
@@ -97,9 +96,10 @@ func InteractiveSelectData[T ScoreplayType] (data []T) string {
 		fmt.Println(question)
 	} else {
 		question += "\nPlease, select an option amongst the choices above, by typing the ID of your selected element (e.g 'sr:resource:17')"
+		validInput := false
 		for (validInput != true) {
 			fmt.Println(question)
-			answer, _ := reader.ReadString('\n')
+			answer, _ = reader.ReadString('\n')
 			answer = answer[:len(answer)-1]
 			for i := 0 ; i < len(data) && validInput != true ; i++ {
 				validInput = answer == data[i].GetId()

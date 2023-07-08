@@ -63,6 +63,7 @@ func CLI(args []string) {
 
 func LoadConf() *Options {
 	opts := Options{
+		ApiKey: "",
 		ApiRoute: "https://api.sportradar.com/soccer-extended",
 		ApiEnv: "production",
 		ApiVer: "v4",
