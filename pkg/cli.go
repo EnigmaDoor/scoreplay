@@ -11,10 +11,10 @@ import (
 // Struct used to remember CLI options
 type Options struct {
 	// Used in CLI or interactive requested search
-	Competition string
-	Season string
-	Competitor string
-	Player string
+	Competition string `mapstructure:"COMPETITION_ID"`
+	Season string `mapstructure:"SEASON_ID"`
+	Competitor string `mapstructure:"COMPETITOR_ID"`
+	Player string `mapstructure:"PLAYER_ID"`
 
 	// Will we fetch from the API, or local read
 	Input string
@@ -43,16 +43,19 @@ func CLI(args []string) {
 				Name: "competition",
 				Usage: "Input a competition ID (sr:competition:17) or name to match",
 				Destination: &opts.Competition,
+				Value: opts.Competition,
 			},
 			&cli.StringFlag{
 				Name: "season",
 				Usage: "Input a season ID (sr:season:17) or name to match",
 				Destination: &opts.Season,
+				Value: opts.Season,
 			},
 			&cli.StringFlag{
 				Name: "competitor",
 				Usage: "Input a competitor ID (sr:competitor:17) or name to match",
 				Destination: &opts.Competitor,
+				Value: opts.Competitor,
 			},
 		},
 		Action: func(*cli.Context) error {

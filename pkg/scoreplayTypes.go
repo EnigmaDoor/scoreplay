@@ -41,17 +41,38 @@ type SeasonResponse struct {
 type Competitor struct {
 	Id string
 	Name string
+	ShortName string
+	Abbreviation string
+	Players []Player
 }
 func (r Competitor) GetId() string { return r.Id }
 func (r Competitor) GetName() string { return r.Name }
 
+type CompetitorResponse struct {
+	GeneratedAt string
+	Competitors []Competitor `json:"season_competitors"`
+}
+
 type Player struct {
 	Id string
 	Name string
-	Competitor *Competitor
+	Type string
+	DateOfBirth string
+	Nationality string
+	CountryCode string
+	Height int
+	Weight int
+	JerseyNumber int
+	PreferredFoot string
+	PlaceOfBirth string
 }
 func (r Player) GetId() string { return r.Id }
 func (r Player) GetName() string { return r.Name }
+
+type PlayerResponse struct {
+	GeneratedAt string
+	Competitors []Competitor `json:"season_competitors"`
+}
 
 type ScoreplayType interface {
 	Competition | Season | Competitor | Player | Category
@@ -60,5 +81,5 @@ type ScoreplayType interface {
 }
 
 type ScoreplayResponseType interface {
-	CompetitionResponse | SeasonResponse
+	CompetitionResponse | SeasonResponse | CompetitorResponse
 }

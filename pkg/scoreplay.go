@@ -13,6 +13,9 @@ type SrData struct {
 
 	SeasonId string
 	SeasonDataset []Season
+
+	CompetitorId string
+	CompetitorDataset []Competition
 }
 
 func Scoreplay(opts *Options) {
@@ -76,8 +79,40 @@ func InteractiveFetchData(opts *Options) (err error) {
 	fmt.Println("SEASON SELECTED ", data.SeasonId)
 
 	// Season Competitor
+	// idRegex, err = buildRegex("competitor"); if err != nil {
+	// 	// todo err handle
+	// 	return
+	// }
+	// if (len(opts.Competitor) > 0 && len(idRegex.FindString(opts.Competitor)) > 0) {
+	// 	data.CompetitorId = opts.Competitor
+	// } else {
+	// 	var payload *CompetitorResponse
+	// 	route = baseRoute + "seasons/" + data.SeasonId + "/competitors"
+	// 	payload, err = ApiCall[CompetitorResponse](route, opts.ApiKey); if err != nil {
+	// 		// todo error handling
+	// 		return
+	// 	}
+	// 	data.CompetitorId = InteractiveSelectData[Competitor](payload.Competitors)
+	// }
+	// fmt.Println("COMPETITOR SELECTED ", data.CompetitorId)
 
 	// Season Competitor Players
+	idRegex, err = buildRegex("player"); if err != nil {
+		// todo err handle
+		return
+	}
+	if (len(opts.Player) > 0 && len(idRegex.FindString(opts.Player)) > 0) {
+		data.PlayerId = opts.Player
+	} else {
+		var payload *PlayerResponse
+		route = baseRoute + "seasons/" + data.SeasonId + "/competitor_players"
+		payload, err = ApiCall[PlayerResponse](route, opts.ApiKey); if err != nil {
+			// todo error handling
+			return
+		}
+		data.PlayerId = InteractiveSelectData[Player](payload.Players)
+	}
+	fmt.Println("PLAYER SELECTED ", data.PlayerId)
 	return
 }
 
