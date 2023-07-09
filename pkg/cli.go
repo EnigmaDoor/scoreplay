@@ -15,6 +15,8 @@ type Options struct {
 	Competitor string `mapstructure:"COMPETITOR_ID"`
 	Player string `mapstructure:"PLAYER_ID"`
 
+	// Force input/output to this LocalFolder
+	LocalFolder String `mapstructure:"LOCAL_FOLDER"`
 	// Will we fetch from the API, or local read
 	Input string
 	// Will we local write
@@ -69,6 +71,7 @@ func CLI(args []string) {
 
 func LoadConf() (*Options, error) {
 	opts := Options{
+		LocalFolder: "./storage"
 		ApiKey: "",
 		ApiRoute: "https://api.sportradar.com/soccer-extended",
 		ApiEnv: "production",

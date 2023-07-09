@@ -19,6 +19,9 @@ func (t *ScoreplayTime) UnmarshalJSON(b []byte) (err error) {
 	t.Time = date
 	return
 }
+func (t ScoreplayTime) MarshalJSON() ([]byte, error) {
+	return json.Marshal(time.Time(t))
+}
 
 type Category struct {
 	Id string
@@ -109,7 +112,7 @@ func (r Player) Display() (str string) {
 	str += fmt.Sprintf(
 		"Player %s (age %d) occupies role %s\n",
 		r.Name,
-		int(math.Floor(r.DateOfBirth.Sub(now).Hours() / -24 / 365)), // todo cannot use custom type for sub
+		int(math.Floor(r.DateOfBirth.Sub(now).Hours() / -24 / 365)), // todo cannot use custom type for sub. Instead, workaround with *-1
 		// int(math.Floor(now.Sub(r.DateOfBirth).Hours() / 24 / 365)),
 		r.Type,
 	)

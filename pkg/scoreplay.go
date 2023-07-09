@@ -25,6 +25,7 @@ type SrData struct {
 }
 
 func Scoreplay(opts *Options) {
+	var data *SrData
 
 	// Get input: interactive competition > season > competitor > player
 	// Or from CLI
@@ -32,16 +33,21 @@ func Scoreplay(opts *Options) {
 	if (len(opts.Input) > 0) {
 
 	} else {
-		_, err := InteractiveFetchData(opts); if err != nil {
+		data, err := InteractiveFetchData(opts, data); if err != nil {
 			log.Fatal("[Scoreplay] Fatal failure", err)
 		}
 	}
 
-	// Write output if requested
+	if (len(opts.Output) > 0) {
+		err := WriteOutput(&data, opts); if err != nil {
+			log.Fatal("[Scoreplay] Fatal failure", err)
+		}
+	}
 }
 
+// TODO Factory to reduce repetition. Requires a GetPayload() on ScoreplayResponseType, and double generic (ScoreplayType and ScoreplayResponseType), a way to write in SrData generically. Example
+// func InteractiveFetchData[T ScoreplayType, R ScoreplayResponseType] (opts *Options, data *SrData, route string, resource string) (selected *T, dataset *[]T)
 func InteractiveFetchData(opts *Options) (*SrData, error) {
-	var data SrData
 	var route string
 	baseRoute := opts.ApiRoute + "/" + opts.ApiEnv + "/" + opts.ApiVer + "/" + opts.ApiLoc + "/"
 
