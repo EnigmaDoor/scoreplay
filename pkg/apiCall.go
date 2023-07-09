@@ -2,6 +2,7 @@ package scoreplay
 
 import (
 	"fmt"
+	"log"
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
@@ -11,23 +12,22 @@ func ApiCall[T ScoreplayResponseType] (route string, apiKey string) (*T, error) 
 	var response T
 
 	route = route + ".json?api_key=" + apiKey
-	fmt.Println("myroute = ", route)
 
 	res, err := http.Get(route); if err != nil {
-		// todo err handling
+		log.Println(fmt.Sprintf("[ApiCall] GET failure for route %s", route), err)
 		return &response, err
 	}
 	defer res.Body.Close()
 
 	body, err := ioutil.ReadAll(res.Body); if err != nil {
-		// todo err handling
+		log.Println(fmt.Sprintf("[ApiCall] Read Body failure for route %s", route), err)
 		return &response, err
 	}
 
-	// fmt.Println("==============>", string(body[:]))
+	err = json.Unmarshal(body, &response); if err != nil {
+		log.Println(fmt.Sprintf("[ApiCall] Unmarshal failure for route %s", route), err)
+		return &response, err
+	}
 
-	json.Unmarshal(body, &response)
-
-	// fmt.Println("==============>", response)
 	return &response, err
 }

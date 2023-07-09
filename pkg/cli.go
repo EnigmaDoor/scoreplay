@@ -2,7 +2,6 @@ package scoreplay
 
 import (
 	"log"
-	"fmt"
 
 	"github.com/spf13/viper"
 	"github.com/urfave/cli/v2"
@@ -31,8 +30,7 @@ type Options struct {
 
 func CLI(args []string) {
 	opts, err := LoadConf(); if err != nil {
-		// todo error handling
-		return
+		log.Fatal("[CLI] Config load failure", err)
 	}
 
 	app := &cli.App{
@@ -65,12 +63,11 @@ func CLI(args []string) {
 	}
 
 	if err := app.Run(args); err != nil {
-		fmt.Println("Error on CLI app running")
+		log.Fatal("[CLI] CLI app failure")
 	}
 }
 
 func LoadConf() (*Options, error) {
-	var err error
 	opts := Options{
 		ApiKey: "",
 		ApiRoute: "https://api.sportradar.com/soccer-extended",
@@ -84,11 +81,13 @@ func LoadConf() (*Options, error) {
 	viper.SetConfigName("api")
 	viper.SetConfigType("env")
 	if err := viper.ReadInConfig(); err != nil {
-		log.Fatal("Error reading env file", err)
+		log.Println("[LoadConf] Reading config env file failure", err)
+		return &opts, err
 	}
 	// Viper unmarshals the loaded env varialbes into the struct
 	if err := viper.Unmarshal(&opts); err != nil {
-		log.Fatal(err)
+		log.Println("[LoadConf] Unmarshal config env file failure", err)
+		return &opts, err
 	}
 
 	// And overwrite with the .env file
@@ -96,13 +95,14 @@ func LoadConf() (*Options, error) {
 	viper.SetConfigName(".env")
 	viper.SetConfigType("env")
 	if err := viper.ReadInConfig(); err != nil {
-		log.Fatal("Error reading env file", err)
+		log.Println("[LoadConf] Reading local env file failure", err)
+		return &opts, err
 	}
 	// Viper unmarshals the loaded env varialbes into the struct
 	if err := viper.Unmarshal(&opts); err != nil {
-		log.Fatal(err)
+		log.Println("[LoadConf] Unmarshal local env file failure", err)
+		return &opts, err
 	}
 
-	fmt.Println("OPTIONS", opts)
-	return &opts, err
+	return &opts, nil
 }

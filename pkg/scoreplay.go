@@ -3,6 +3,7 @@ package scoreplay
 import (
 	"os"
 	"fmt"
+	"log"
 	"bufio"
 	"regexp"
 	"golang.org/x/exp/slices"
@@ -23,7 +24,6 @@ type SrData struct {
 }
 
 func Scoreplay(opts *Options) {
-	fmt.Println("boom! I say!", opts, len(opts.Competition))
 
 	// Get input: interactive competition > season > competitor > player
 	// Or from CLI
@@ -31,16 +31,16 @@ func Scoreplay(opts *Options) {
 	if (len(opts.Input) > 0) {
 
 	} else {
-		InteractiveFetchData(opts)
+		_, err := InteractiveFetchData(opts); if err != nil {
+			log.Fatal("[Scoreplay] Fatal failure")
+		}
 	}
-
-
-	// Apply search if necessary
 
 	// Write output if requested
 }
 
-func InteractiveFetchData(opts *Options) (err error) {
+func InteractiveFetchData(opts *Options) (*SrData, error) {
+	var err error
 	var idRegex *regexp.Regexp
 	var data SrData
 	var route string
@@ -48,8 +48,8 @@ func InteractiveFetchData(opts *Options) (err error) {
 
 	// Competition
 	idRegex, err = buildRegex("competition"); if err != nil {
-		// todo err handle
-		return
+		log.Println("[InteractiveFetchData] buildRegex Competition Failure", err)
+		return &data, err
 	}
 	if (len(opts.Competition) > 0 && len(idRegex.FindString(opts.Competition)) > 0) {
 		data.CompetitionId = opts.Competition
@@ -58,10 +58,10 @@ func InteractiveFetchData(opts *Options) (err error) {
 		var payload *CompetitionResponse
 		route = baseRoute + "competitions"
 		payload, err = ApiCall[CompetitionResponse](route, opts.ApiKey); if err != nil {
-			// todo error handling
-			return
+			log.Println("[InteractiveFetchData] ApiCall Competition Failure", err)
+			return &data, err
 		}
-		data.Competition = InteractiveSelectData[Competition](payload.Competitions)
+		data.Competition, err = InteractiveSelectData[Competition](payload.Competitions)
 		data.CompetitionId = data.Competition.Id
 		data.CompetitionDataset = payload.Competitions
 		fmt.Println(data.Competition.Display())
@@ -69,8 +69,8 @@ func InteractiveFetchData(opts *Options) (err error) {
 
 	// Season
 	idRegex, err = buildRegex("season"); if err != nil {
-		// todo err handle
-		return
+		log.Println("[InteractiveFetchData] buildRegex Season Failure", err)
+		return &data, err
 	}
 	if (len(opts.Season) > 0 && len(idRegex.FindString(opts.Season)) > 0) {
 		data.SeasonId = opts.Season
@@ -79,10 +79,10 @@ func InteractiveFetchData(opts *Options) (err error) {
 		var payload *SeasonResponse
 		route = baseRoute + "competitions/" + data.CompetitionId + "/seasons"
 		payload, err = ApiCall[SeasonResponse](route, opts.ApiKey); if err != nil {
-			// todo error handling
-			return
+			log.Println("[InteractiveFetchData] ApiCall Season Failure", err)
+			return &data, err
 		}
-		data.Season = InteractiveSelectData[Season](payload.Seasons)
+		data.Season, err = InteractiveSelectData[Season](payload.Seasons)
 		data.SeasonId = data.Season.GetId()
 		data.SeasonDataset = payload.Seasons
 		fmt.Println(data.Season.Display())
@@ -90,8 +90,8 @@ func InteractiveFetchData(opts *Options) (err error) {
 
 	// Season Competitor Players
 	idRegex, err = buildRegex("competitor"); if err != nil {
-		// todo err handle
-		return
+		log.Println("[InteractiveFetchData] buildRegex Competitor Failure", err)
+		return &data, err
 	}
 	if (len(opts.Competitor) > 0 && len(idRegex.FindString(opts.Competitor)) > 0) {
 		data.CompetitorId = opts.Competitor
@@ -100,19 +100,19 @@ func InteractiveFetchData(opts *Options) (err error) {
 		var payload *CompetitorResponse
 		route = baseRoute + "seasons/" + data.SeasonId + "/competitor_players"
 		payload, err = ApiCall[CompetitorResponse](route, opts.ApiKey); if err != nil {
-			// todo error handling
-			return
+			log.Println("[InteractiveFetchData] ApiCall Competitor Failure", err)
+			return &data, err
 		}
-		data.Competitor = InteractiveSelectData[Competitor](payload.Competitors)
+		data.Competitor, err = InteractiveSelectData[Competitor](payload.Competitors)
 		data.CompetitorId = data.Competitor.Id
 		data.CompetitorDataset = payload.Competitors
 		fmt.Println(data.Competitor.Display())
 	}
 
-	return
+	return &data, nil
 }
 
-func InteractiveSelectData[T ScoreplayType] (data []T) (selected *T) {
+func InteractiveSelectData[T ScoreplayType] (data []T) (selected *T, err error) {
 	var question, answer string
 	reader := bufio.NewReader(os.Stdin)
 
@@ -131,7 +131,9 @@ func InteractiveSelectData[T ScoreplayType] (data []T) (selected *T) {
 		resourceIdx := -1
 		for (resourceIdx == -1) {
 			fmt.Println(question)
-			answer, _ = reader.ReadString('\n')
+			answer, err = reader.ReadString('\n'); if err != nil {
+				log.Println("[InteractiveSelectData] Reader failure", err)
+			}
 			answer = answer[:len(answer)-1]
 			resourceIdx = slices.IndexFunc(data, func (d T) bool { return answer == d.GetId() })
 		}
