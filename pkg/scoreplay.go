@@ -28,6 +28,11 @@ func Scoreplay(opts *Options) {
 	var err error
 	var data *SrData
 
+	// Ensure local storage folder
+	err = EnsureLocalFolder(opts); if err != nil {
+		log.Fatal("[Scoreplay] Fatal failure setting up local folder", err)
+	}
+
 	// Get input: interactive competition > season > competitor > player
 	// Or from CLI
 	// Or read from file
