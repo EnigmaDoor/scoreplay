@@ -1,5 +1,25 @@
 package scoreplay
 
+import (
+	"fmt"
+	"time"
+	"math"
+	"strings"
+)
+
+type ScoreplayTime struct {
+	time.Time
+}
+func (t *ScoreplayTime) UnmarshalJSON(b []byte) (err error) {
+	s := strings.Trim(string(b), "\"")
+	date, err := time.Parse("2006-01-02", s)
+	if err != nil {
+		return err
+	}
+	t.Time = date
+	return
+}
+
 type Category struct {
 	Id string
 	Name string
@@ -16,6 +36,11 @@ type Competition struct {
 }
 func (r Competition) GetId() string { return r.Id }
 func (r Competition) GetName() string { return r.Name }
+func (r Competition) Display() (str string) {
+	str += fmt.Sprintf("Competition %s (%s)", r.Name, r.Gender)
+	return
+}
+
 
 type CompetitionResponse struct {
 	GeneratedAt string
@@ -32,6 +57,10 @@ type Season struct {
 }
 func (r Season) GetId() string { return r.Id }
 func (r Season) GetName() string { return r.Name }
+func (r Season) Display() (str string) {
+	str += fmt.Sprintf("Season %s (%d)", r.Name, r.Year)
+	return
+}
 
 type SeasonResponse struct {
 	GeneratedAt string
@@ -47,17 +76,24 @@ type Competitor struct {
 }
 func (r Competitor) GetId() string { return r.Id }
 func (r Competitor) GetName() string { return r.Name }
+func (r Competitor) Display() (str string) {
+	str += fmt.Sprintf("Competitor %s (%s) has the following players:\n", r.Name, r.Id)
+	for i := range r.Players {
+		str += r.Players[i].Display()
+	}
+	return
+}
 
 type CompetitorResponse struct {
 	GeneratedAt string
-	Competitors []Competitor `json:"season_competitors"`
+	Competitors []Competitor `json:"season_competitor_players"`
 }
 
 type Player struct {
 	Id string
 	Name string
 	Type string
-	DateOfBirth string
+	DateOfBirth ScoreplayTime `json:"date_of_birth"`
 	Nationality string
 	CountryCode string
 	Height int
@@ -68,10 +104,16 @@ type Player struct {
 }
 func (r Player) GetId() string { return r.Id }
 func (r Player) GetName() string { return r.Name }
-
-type PlayerResponse struct {
-	GeneratedAt string
-	Competitors []Competitor `json:"season_competitors"`
+func (r Player) Display() (str string) {
+	now := time.Now()
+	str += fmt.Sprintf(
+		"Player %s (age %d) occupies role %s\n",
+		r.Name,
+		int(math.Floor(r.DateOfBirth.Sub(now).Hours() / -24 / 365)), // todo cannot use custom type for sub
+		// int(math.Floor(now.Sub(r.DateOfBirth).Hours() / 24 / 365)),
+		r.Type,
+	)
+	return
 }
 
 type ScoreplayType interface {

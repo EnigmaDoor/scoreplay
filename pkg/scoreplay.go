@@ -5,17 +5,21 @@ import (
 	"fmt"
 	"bufio"
 	"regexp"
+	"golang.org/x/exp/slices"
 )
 
 type SrData struct {
 	CompetitionId string
+	Competition *Competition
 	CompetitionDataset []Competition
 
 	SeasonId string
+	Season *Season
 	SeasonDataset []Season
 
 	CompetitorId string
-	CompetitorDataset []Competition
+	Competitor *Competitor
+	CompetitorDataset []Competitor
 }
 
 func Scoreplay(opts *Options) {
@@ -49,6 +53,7 @@ func InteractiveFetchData(opts *Options) (err error) {
 	}
 	if (len(opts.Competition) > 0 && len(idRegex.FindString(opts.Competition)) > 0) {
 		data.CompetitionId = opts.Competition
+		fmt.Println("Automatically selected competition " + data.CompetitionId)
 	} else {
 		var payload *CompetitionResponse
 		route = baseRoute + "competitions"
@@ -56,9 +61,11 @@ func InteractiveFetchData(opts *Options) (err error) {
 			// todo error handling
 			return
 		}
-		data.CompetitionId = InteractiveSelectData[Competition](payload.Competitions)
+		data.Competition = InteractiveSelectData[Competition](payload.Competitions)
+		data.CompetitionId = data.Competition.Id
+		data.CompetitionDataset = payload.Competitions
+		fmt.Println(data.Competition.Display())
 	}
-	fmt.Println("COMPETITION SELECTED ", data.CompetitionId)
 
 	// Season
 	idRegex, err = buildRegex("season"); if err != nil {
@@ -67,6 +74,7 @@ func InteractiveFetchData(opts *Options) (err error) {
 	}
 	if (len(opts.Season) > 0 && len(idRegex.FindString(opts.Season)) > 0) {
 		data.SeasonId = opts.Season
+		fmt.Println("Automatically selected season " + data.SeasonId)
 	} else {
 		var payload *SeasonResponse
 		route = baseRoute + "competitions/" + data.CompetitionId + "/seasons"
@@ -74,49 +82,37 @@ func InteractiveFetchData(opts *Options) (err error) {
 			// todo error handling
 			return
 		}
-		data.SeasonId = InteractiveSelectData[Season](payload.Seasons)
+		data.Season = InteractiveSelectData[Season](payload.Seasons)
+		data.SeasonId = data.Season.GetId()
+		data.SeasonDataset = payload.Seasons
+		fmt.Println(data.Season.Display())
 	}
-	fmt.Println("SEASON SELECTED ", data.SeasonId)
-
-	// Season Competitor
-	// idRegex, err = buildRegex("competitor"); if err != nil {
-	// 	// todo err handle
-	// 	return
-	// }
-	// if (len(opts.Competitor) > 0 && len(idRegex.FindString(opts.Competitor)) > 0) {
-	// 	data.CompetitorId = opts.Competitor
-	// } else {
-	// 	var payload *CompetitorResponse
-	// 	route = baseRoute + "seasons/" + data.SeasonId + "/competitors"
-	// 	payload, err = ApiCall[CompetitorResponse](route, opts.ApiKey); if err != nil {
-	// 		// todo error handling
-	// 		return
-	// 	}
-	// 	data.CompetitorId = InteractiveSelectData[Competitor](payload.Competitors)
-	// }
-	// fmt.Println("COMPETITOR SELECTED ", data.CompetitorId)
 
 	// Season Competitor Players
-	idRegex, err = buildRegex("player"); if err != nil {
+	idRegex, err = buildRegex("competitor"); if err != nil {
 		// todo err handle
 		return
 	}
-	if (len(opts.Player) > 0 && len(idRegex.FindString(opts.Player)) > 0) {
-		data.PlayerId = opts.Player
+	if (len(opts.Competitor) > 0 && len(idRegex.FindString(opts.Competitor)) > 0) {
+		data.CompetitorId = opts.Competitor
+		fmt.Println("Automatically selected competitor " + data.CompetitorId)
 	} else {
-		var payload *PlayerResponse
+		var payload *CompetitorResponse
 		route = baseRoute + "seasons/" + data.SeasonId + "/competitor_players"
-		payload, err = ApiCall[PlayerResponse](route, opts.ApiKey); if err != nil {
+		payload, err = ApiCall[CompetitorResponse](route, opts.ApiKey); if err != nil {
 			// todo error handling
 			return
 		}
-		data.PlayerId = InteractiveSelectData[Player](payload.Players)
+		data.Competitor = InteractiveSelectData[Competitor](payload.Competitors)
+		data.CompetitorId = data.Competitor.Id
+		data.CompetitorDataset = payload.Competitors
+		fmt.Println(data.Competitor.Display())
 	}
-	fmt.Println("PLAYER SELECTED ", data.PlayerId)
+
 	return
 }
 
-func InteractiveSelectData[T ScoreplayType] (data []T) string {
+func InteractiveSelectData[T ScoreplayType] (data []T) (selected *T) {
 	var question, answer string
 	reader := bufio.NewReader(os.Stdin)
 
@@ -129,20 +125,20 @@ func InteractiveSelectData[T ScoreplayType] (data []T) string {
 		answer = data[0].GetId()
 		question += "\nAutomatically selecting the only result available."
 		fmt.Println(question)
+		selected = &data[0]
 	} else {
-		question += "\nPlease, select an option amongst the choices above, by typing the ID of your selected element (e.g 'sr:resource:17')"
-		validInput := false
-		for (validInput != true) {
+		question += fmt.Sprintf("\nPlease, select an option amongst the choices above, by typing the ID of your selected element (e.g '%s')", data[0].GetId())
+		resourceIdx := -1
+		for (resourceIdx == -1) {
 			fmt.Println(question)
 			answer, _ = reader.ReadString('\n')
 			answer = answer[:len(answer)-1]
-			for i := 0 ; i < len(data) && validInput != true ; i++ {
-				validInput = answer == data[i].GetId()
-			}
+			resourceIdx = slices.IndexFunc(data, func (d T) bool { return answer == d.GetId() })
 		}
+		selected = &data[resourceIdx]
 	}
 
-	return answer
+	return
 }
 
 func buildRegex(resource string) (reg *regexp.Regexp, err error) {
