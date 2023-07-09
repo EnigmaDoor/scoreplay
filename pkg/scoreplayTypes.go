@@ -20,7 +20,7 @@ func (t *ScoreplayTime) UnmarshalJSON(b []byte) (err error) {
 	return
 }
 func (t ScoreplayTime) MarshalJSON() ([]byte, error) {
-	return json.Marshal(time.Time(t))
+	return []byte(fmt.Sprintf("\"%s\"", t.Time.Format("2006-01-02"))), nil
 }
 
 type Category struct {
