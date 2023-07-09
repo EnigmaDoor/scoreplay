@@ -6,6 +6,7 @@ import (
 	"log"
 	"bufio"
 	"regexp"
+	"strings"
 	"golang.org/x/exp/slices"
 )
 
@@ -32,7 +33,7 @@ func Scoreplay(opts *Options) {
 
 	} else {
 		_, err := InteractiveFetchData(opts); if err != nil {
-			log.Fatal("[Scoreplay] Fatal failure")
+			log.Fatal("[Scoreplay] Fatal failure", err)
 		}
 	}
 
@@ -40,14 +41,12 @@ func Scoreplay(opts *Options) {
 }
 
 func InteractiveFetchData(opts *Options) (*SrData, error) {
-	var err error
-	var idRegex *regexp.Regexp
 	var data SrData
 	var route string
 	baseRoute := opts.ApiRoute + "/" + opts.ApiEnv + "/" + opts.ApiVer + "/" + opts.ApiLoc + "/"
 
 	// Competition
-	idRegex, err = buildRegex("competition"); if err != nil {
+	idRegex, err := buildRegex("competition"); if err != nil {
 		log.Println("[InteractiveFetchData] buildRegex Competition Failure", err)
 		return &data, err
 	}
@@ -55,13 +54,22 @@ func InteractiveFetchData(opts *Options) (*SrData, error) {
 		data.CompetitionId = opts.Competition
 		fmt.Println("Automatically selected competition " + data.CompetitionId)
 	} else {
-		var payload *CompetitionResponse
+		var competitions []Competition
 		route = baseRoute + "competitions"
-		payload, err = ApiCall[CompetitionResponse](route, opts.ApiKey); if err != nil {
+		payload, err := ApiCall[CompetitionResponse](route, opts.ApiKey); if err != nil {
 			log.Println("[InteractiveFetchData] ApiCall Competition Failure", err)
 			return &data, err
 		}
-		data.Competition, err = InteractiveSelectData[Competition](payload.Competitions)
+		if len(opts.Competition) > 0 {
+			for i := range payload.Competitions {
+				if strings.Contains(payload.Competitions[i].GetName(), opts.Competition) {
+					competitions = append(competitions, payload.Competitions[i])
+				}
+			}
+		} else {
+			competitions = payload.Competitions
+		}
+		data.Competition, err = InteractiveSelectData[Competition](competitions)
 		data.CompetitionId = data.Competition.Id
 		data.CompetitionDataset = payload.Competitions
 		fmt.Println(data.Competition.Display())
@@ -76,13 +84,22 @@ func InteractiveFetchData(opts *Options) (*SrData, error) {
 		data.SeasonId = opts.Season
 		fmt.Println("Automatically selected season " + data.SeasonId)
 	} else {
-		var payload *SeasonResponse
+		var seasons []Season
 		route = baseRoute + "competitions/" + data.CompetitionId + "/seasons"
-		payload, err = ApiCall[SeasonResponse](route, opts.ApiKey); if err != nil {
+		payload, err := ApiCall[SeasonResponse](route, opts.ApiKey); if err != nil {
 			log.Println("[InteractiveFetchData] ApiCall Season Failure", err)
 			return &data, err
 		}
-		data.Season, err = InteractiveSelectData[Season](payload.Seasons)
+		if len(opts.Season) > 0 {
+			for i := range payload.Seasons {
+				if strings.Contains(payload.Seasons[i].GetName(), opts.Season) {
+					seasons = append(seasons, payload.Seasons[i])
+				}
+			}
+		} else {
+			seasons = payload.Seasons
+		}
+		data.Season, err = InteractiveSelectData[Season](seasons)
 		data.SeasonId = data.Season.GetId()
 		data.SeasonDataset = payload.Seasons
 		fmt.Println(data.Season.Display())
@@ -97,13 +114,22 @@ func InteractiveFetchData(opts *Options) (*SrData, error) {
 		data.CompetitorId = opts.Competitor
 		fmt.Println("Automatically selected competitor " + data.CompetitorId)
 	} else {
-		var payload *CompetitorResponse
+		var competitors []Competitor;
 		route = baseRoute + "seasons/" + data.SeasonId + "/competitor_players"
-		payload, err = ApiCall[CompetitorResponse](route, opts.ApiKey); if err != nil {
+		payload, err := ApiCall[CompetitorResponse](route, opts.ApiKey); if err != nil {
 			log.Println("[InteractiveFetchData] ApiCall Competitor Failure", err)
 			return &data, err
 		}
-		data.Competitor, err = InteractiveSelectData[Competitor](payload.Competitors)
+		if len(opts.Competitor) > 0 {
+			for i := range payload.Competitors {
+				if strings.Contains(payload.Competitors[i].GetName(), opts.Competitor) {
+					competitors = append(competitors, payload.Competitors[i])
+				}
+			}
+		} else {
+			competitors = payload.Competitors
+		}
+		data.Competitor, err = InteractiveSelectData[Competitor](competitors)
 		data.CompetitorId = data.Competitor.Id
 		data.CompetitorDataset = payload.Competitors
 		fmt.Println(data.Competitor.Display())
@@ -123,7 +149,7 @@ func InteractiveSelectData[T ScoreplayType] (data []T) (selected *T, err error) 
 		// todo error handling no result, abort
 	} else if (len(data) == 1) {
 		answer = data[0].GetId()
-		question += "\nAutomatically selecting the only result available."
+		question += fmt.Sprintf("Automatically selecting the only result available: %s (%s)\n", data[0].GetName(), data[0].GetId())
 		fmt.Println(question)
 		selected = &data[0]
 	} else {

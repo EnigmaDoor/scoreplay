@@ -52,13 +52,13 @@ type Season struct {
 	Name string
 	StartDate string
 	EndDate string
-	Year int
+	Year string
 	CompetitionId string
 }
 func (r Season) GetId() string { return r.Id }
 func (r Season) GetName() string { return r.Name }
 func (r Season) Display() (str string) {
-	str += fmt.Sprintf("Season %s (%d)", r.Name, r.Year)
+	str += fmt.Sprintf("Season %s (%s)", r.Name, r.Year)
 	return
 }
 
