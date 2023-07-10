@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// ScoreplayTime used to (un)marshalJSON times in Scoreplay API format
 type ScoreplayTime struct {
 	time.Time
 }
@@ -23,6 +24,7 @@ func (t ScoreplayTime) MarshalJSON() ([]byte, error) {
 	return []byte(fmt.Sprintf("\"%s\"", t.Time.Format("2006-01-02"))), nil
 }
 
+// Resource Category from Scoreplay API
 type Category struct {
 	Id string
 	Name string
@@ -31,6 +33,7 @@ type Category struct {
 func (r Category) GetId() string { return r.Id }
 func (r Category) GetName() string { return r.Name }
 
+// Resource Competition from Scoreplay API
 type Competition struct {
 	Id string
 	Name string
@@ -44,12 +47,13 @@ func (r Competition) Display() (str string) {
 	return
 }
 
-
+// Competition Response format from Scoreplay API
 type CompetitionResponse struct {
 	GeneratedAt string
 	Competitions []Competition
 }
 
+// Resource Season from Scoreplay API
 type Season struct {
 	Id string
 	Name string
@@ -65,11 +69,13 @@ func (r Season) Display() (str string) {
 	return
 }
 
+// Season Response format from Scoreplay API
 type SeasonResponse struct {
 	GeneratedAt string
 	Seasons []Season
 }
 
+// Resource Competitor from Scoreplay API
 type Competitor struct {
 	Id string
 	Name string
@@ -87,6 +93,7 @@ func (r Competitor) Display() (str string) {
 	return
 }
 
+// Competitor Response format from Scoreplay API
 type CompetitorResponse struct {
 	GeneratedAt string
 	Competitors []Competitor `json:"season_competitor_players"`
@@ -119,12 +126,14 @@ func (r Player) Display() (str string) {
 	return
 }
 
+// Interface for Scoreplay resources
 type ScoreplayType interface {
 	Competition | Season | Competitor | Player | Category
 	GetId() string
 	GetName() string
 }
 
+// Interface for Scoreplay responses
 type ScoreplayResponseType interface {
 	CompetitionResponse | SeasonResponse | CompetitorResponse
 }

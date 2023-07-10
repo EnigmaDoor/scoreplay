@@ -10,6 +10,8 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+// Scoreplay Data structure, contains the search dataset and allows for
+// easy (un)marshalling into JSON local files
 type SrData struct {
 	CompetitionId string
 	Competition *Competition
@@ -24,6 +26,8 @@ type SrData struct {
 	CompetitorDataset []Competitor
 }
 
+// Main function after Config & CLI setup. Will deal with input/output matters
+// And call on InteractiveFetchData
 func Scoreplay(opts *Options) {
 	var err error
 	var data *SrData
@@ -151,6 +155,9 @@ func InteractiveFetchData(opts *Options) (*SrData, error) {
 	return &data, nil
 }
 
+// InteractiveSelectData will list the possibles choices, present in data.
+// If a single choice is present, it is automatically selected.
+// Otherwise, prompt the user until an ID matching in the dataset is selected.
 func InteractiveSelectData[T ScoreplayType] (data []T) (selected *T, err error) {
 	var question, answer string
 	reader := bufio.NewReader(os.Stdin)
@@ -182,6 +189,7 @@ func InteractiveSelectData[T ScoreplayType] (data []T) (selected *T, err error) 
 	return
 }
 
+// Helper func to ensure the string format is of a correct Scoreplay ID format
 func buildRegex(resource string) (reg *regexp.Regexp, err error) {
 	return regexp.Compile("sr:" + resource + `:\d+`)
 }
