@@ -1,5 +1,5 @@
 # Scoreplay soccer API browser
-
+11;rgb:3030/0a0a/2424
 This is a short project demonstrating Scoreplay Soccer API usage
 
 ## Installing and building the project
@@ -37,9 +37,15 @@ A simple architecture was selected. The usual code flow is as such:
 * * We finally save the search dataset locally in JSON format when required in localStorage.go
 * Most types, structs and interfaces are defined scoreplayTypes.go (that 'condensed' file is only used due to the small scope of the project)
 
+## Design Decisions
+* Generics were used instead of a more traditional structuring mainly due to curiosity and to re-discover them.
+* InteractiveSelectData was made to easily add a better, more interactive CLI.
+* As this is a CLI program, the design reflect a "execute once and terminate" mentality. As such, there is no repeatable search functionality (better to re-execute the program) and most error handling will terminate as error recovery isn't needed.
+
 ## Possible ameliorations
-I kept the scope small, being more interested in generics usage that another feature in this project. However, if we were to scale up, here's a few avenues of improvements:
+I kept the scope small, being more interested in generics usage that another feature in this project. However, if we were to scale up, here's a few avenues of improvements, by order of priority:
 * Factorizing InteractiveFetchData to avoid code repetition. The idea is explained more throughly in scoreplay.go, the comment leading to func InteractiveFetchData. This would lead to cleaner code and far easier adding of another resource to manage.
-* A (truly) interactive CLI prompt. When prompting the user for a choice, he can either arrow up or arrow down to select one of the options (5 displayed at any point, the selected + 2 below + 2 above), or write to automatically search within the dataset and only display matching names. ENTER to select.
+* A (truly) interactive CLI prompt. When prompting the user for a choice, he can either arrow up or arrow down to select one of the options (5 displayed at any point, the selected + 2 below + 2 above), or write to automatically search within the dataset and only display matching names. ENTER to select. Arrow right could display more data related to the highlighted resource, and arrow left to go back to the selection menu.
+* Fully implement --input, disabling API calls and instead reusing a previous search (not interesting without the interactive CLI above). The file reading is implemented.
 * More statistics displayed, notably seasonal statistics for competitors and players
 Others improvements are of course possible, for example: better local storage solutions : schema/types generation from Scoreplay openapi.yaml ; more testing coverage ; auto wait + retry on network failure

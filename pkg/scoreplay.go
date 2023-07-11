@@ -30,42 +30,41 @@ type SrData struct {
 // And call on InteractiveFetchData
 func Scoreplay(opts *Options) {
 	var err error
-	var data *SrData
+	var data SrData
 
 	// Ensure local storage folder
 	err = EnsureLocalFolder(opts); if err != nil {
 		log.Fatal("[Scoreplay] Fatal failure setting up local folder", err)
 	}
 
-	// Get input: interactive competition > season > competitor > player
-	// Or from CLI
-	// Or read from file
-	if (len(opts.Input) > 0) {
+	// if (len(opts.Input) > 0) {
+	// 	err = ReadInput(opts, &data); if err != nil {
+	// 		log.Fatal("[Scoreplay] Fatal failure on read input", err)
+	// 	}
+	// }
 
-	} else {
-		data, err = InteractiveFetchData(opts); if err != nil {
-			log.Fatal("[Scoreplay] Fatal failure", err)
-		}
+	err = InteractiveFetchData(opts, &data); if err != nil {
+		log.Fatal("[Scoreplay] Fatal failure", err)
 	}
 
 	if (len(opts.Output) > 0) {
-		err = WriteOutput(data, opts); if err != nil {
-			log.Fatal("[Scoreplay] Fatal failure", err)
+		err = WriteOutput(opts, &data); if err != nil {
+			log.Fatal("[Scoreplay] Fatal failure on write output", err)
 		}
 	}
 }
 
 // TODO Factory to reduce repetition. Requires a GetPayload() on ScoreplayResponseType, and double generic (ScoreplayType and ScoreplayResponseType), a way to write in SrData generically. Example
-// func InteractiveFetchData[T ScoreplayType, R ScoreplayResponseType] (opts *Options, data *SrData, route string, resource string) (selected *T, dataset *[]T)
-func InteractiveFetchData(opts *Options) (*SrData, error) {
-	var data SrData
+// func GetRoute(baseRoute string, args []string) for ScoreplayType interface
+// func InteractiveFetchData[T ScoreplayType, R ScoreplayResponseType] (opts *Options, data *SrData, resource string) (selected *T, dataset *[]T)
+func InteractiveFetchData(opts *Options, data *SrData) (error) {
 	var route string
 	baseRoute := opts.ApiRoute + "/" + opts.ApiEnv + "/" + opts.ApiVer + "/" + opts.ApiLoc + "/"
 
 	// Competition
 	idRegex, err := buildRegex("competition"); if err != nil {
 		log.Println("[InteractiveFetchData] buildRegex Competition Failure", err)
-		return &data, err
+		return err
 	}
 	if (len(opts.Competition) > 0 && len(idRegex.FindString(opts.Competition)) > 0) {
 		data.CompetitionId = opts.Competition
@@ -75,7 +74,7 @@ func InteractiveFetchData(opts *Options) (*SrData, error) {
 		route = baseRoute + "competitions"
 		payload, err := ApiCall[CompetitionResponse](route, opts.ApiKey); if err != nil {
 			log.Println("[InteractiveFetchData] ApiCall Competition Failure", err)
-			return &data, err
+			return err
 		}
 		if len(opts.Competition) > 0 {
 			for i := range payload.Competitions {
@@ -95,7 +94,7 @@ func InteractiveFetchData(opts *Options) (*SrData, error) {
 	// Season
 	idRegex, err = buildRegex("season"); if err != nil {
 		log.Println("[InteractiveFetchData] buildRegex Season Failure", err)
-		return &data, err
+		return err
 	}
 	if (len(opts.Season) > 0 && len(idRegex.FindString(opts.Season)) > 0) {
 		data.SeasonId = opts.Season
@@ -105,7 +104,7 @@ func InteractiveFetchData(opts *Options) (*SrData, error) {
 		route = baseRoute + "competitions/" + data.CompetitionId + "/seasons"
 		payload, err := ApiCall[SeasonResponse](route, opts.ApiKey); if err != nil {
 			log.Println("[InteractiveFetchData] ApiCall Season Failure", err)
-			return &data, err
+			return err
 		}
 		if len(opts.Season) > 0 {
 			for i := range payload.Seasons {
@@ -125,7 +124,7 @@ func InteractiveFetchData(opts *Options) (*SrData, error) {
 	// Season Competitor Players
 	idRegex, err = buildRegex("competitor"); if err != nil {
 		log.Println("[InteractiveFetchData] buildRegex Competitor Failure", err)
-		return &data, err
+		return err
 	}
 	if (len(opts.Competitor) > 0 && len(idRegex.FindString(opts.Competitor)) > 0) {
 		data.CompetitorId = opts.Competitor
@@ -135,7 +134,7 @@ func InteractiveFetchData(opts *Options) (*SrData, error) {
 		route = baseRoute + "seasons/" + data.SeasonId + "/competitor_players"
 		payload, err := ApiCall[CompetitorResponse](route, opts.ApiKey); if err != nil {
 			log.Println("[InteractiveFetchData] ApiCall Competitor Failure", err)
-			return &data, err
+			return err
 		}
 		if len(opts.Competitor) > 0 {
 			for i := range payload.Competitors {
@@ -152,7 +151,7 @@ func InteractiveFetchData(opts *Options) (*SrData, error) {
 		fmt.Println(data.Competitor.Display())
 	}
 
-	return &data, nil
+	return nil
 }
 
 // InteractiveSelectData will list the possibles choices, present in data.

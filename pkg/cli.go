@@ -63,6 +63,12 @@ func CLI(args []string) {
 				Destination: &opts.Output,
 				Value: opts.Output,
 			},
+			&cli.StringFlag{
+				Name: "input",
+				Usage: "[WIP/Not Fully Implemented] Use to disable API call and reuse a previous, locally-saved search dataset",
+				Destination: &opts.Input,
+				Value: opts.Input,
+			},
 		},
 		Action: func(*cli.Context) error {
 			Scoreplay(opts)

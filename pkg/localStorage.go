@@ -16,7 +16,7 @@ func EnsureLocalFolder(opts *Options) (err error) {
 	return
 }
 
-func WriteOutput(data *SrData, opts *Options) (err error) {
+func WriteOutput(opts *Options, data *SrData) (err error) {
 	file, err := json.MarshalIndent(data, "", " "); if err != nil {
 		log.Println("[WriteOutput] Failure on marshalling", err)
 		return
@@ -24,8 +24,22 @@ func WriteOutput(data *SrData, opts *Options) (err error) {
 	outputPath := path.Join(".", path.Clean(opts.LocalFolder), path.Clean(opts.Output))
 	fmt.Println("[WriteOutput] Saving search dataset into ", outputPath)
 	err = ioutil.WriteFile(outputPath, file, 0644); if err != nil {
-		log.Println("[WriteOutput] Failure on write", err)
+		log.Println("[WriteOutput] Failure on write", outputPath, err)
 		return
 	}
+	return
+}
+
+func ReadInput(opts *Options, data *SrData) (err error) {
+	inputPath := path.Join(".", path.Clean(opts.LocalFolder), path.Clean(opts.Input))
+	file, err := ioutil.ReadFile(inputPath); if err != nil {
+		log.Println("[ReadInput] Failure on read", inputPath, err)
+		return
+	}
+	err = json.Unmarshal([]byte(file), data); if err != nil {
+		log.Println("[ReadInput] Failure on unmarshalling", err)
+		return
+	}
+	fmt.Println(fmt.Sprintf("[ReadInput] Reusing %s search dataset", inputPath))
 	return
 }
