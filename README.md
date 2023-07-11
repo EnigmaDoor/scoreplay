@@ -21,7 +21,7 @@ After building the project, a binary is present to execute it. The main flow of 
 > ./scoreplay --competition UEFA --output test.json  
 > ./scoreplay --input test.json
 
-Configuration priority (the prior is overwritten by the later): .env < configs/api.env < CLI flags  
+Configuration priority (the prior is overwritten by the later): configs/api.env < .env < CLI flags  
 
 ## Structure
 * pkg - Contains the code
