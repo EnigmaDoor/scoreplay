@@ -8,6 +8,7 @@ Clone the github repository, input your own Scoreplay API_KEY, build and run the
 > go build  
 > echo "API_KEY=ENTER_YOUR_API_KEY_HERE" > .env  
 > ./scoreplay --help  
+
 Available is a .env.example file for an easy first-use example  
 
 ## Usage
