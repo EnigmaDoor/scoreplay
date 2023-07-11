@@ -85,7 +85,10 @@ func InteractiveFetchData(opts *Options, data *SrData) (error) {
 		} else {
 			competitions = payload.Competitions
 		}
-		data.Competition, err = InteractiveSelectData[Competition](competitions)
+		data.Competition, err = InteractiveSelectData[Competition](competitions); if err != nil {
+			log.Println("[InteractiveFetchData] InteractiveSelectData Competition Failure", err)
+			return err
+		}
 		data.CompetitionId = data.Competition.Id
 		data.CompetitionDataset = payload.Competitions
 		fmt.Println(data.Competition.Display())
@@ -115,7 +118,10 @@ func InteractiveFetchData(opts *Options, data *SrData) (error) {
 		} else {
 			seasons = payload.Seasons
 		}
-		data.Season, err = InteractiveSelectData[Season](seasons)
+		data.Season, err = InteractiveSelectData[Season](seasons); if err != nil {
+			log.Println("[InteractiveFetchData] InteractiveSelectData Season Failure", err)
+			return err
+		}
 		data.SeasonId = data.Season.GetId()
 		data.SeasonDataset = payload.Seasons
 		fmt.Println(data.Season.Display())
@@ -147,7 +153,10 @@ func InteractiveFetchData(opts *Options, data *SrData) (error) {
 		} else {
 			competitors = payload.Competitors
 		}
-		data.Competitor, err = InteractiveSelectData[Competitor](competitors)
+		data.Competitor, err = InteractiveSelectData[Competitor](competitors); if err != nil {
+			log.Println("[InteractiveFetchData] InteractiveSelectData Competitor Failure", err)
+			return err
+		}
 		data.CompetitorId = data.Competitor.Id
 		data.CompetitorDataset = payload.Competitors
 		fmt.Println(data.Competitor.Display())
@@ -167,7 +176,7 @@ func InteractiveSelectData[T ScoreplayType] (data []T) (selected *T, err error) 
 		question += fmt.Sprintf("%s => %s\n", data[i].GetId(), data[i].GetName())
 	}
 	if (len(data) == 0) {
-		// todo error handling no result, abort
+		log.Fatal("[InteractiveSelectData] No result found. Please verify your search and try again.")
 	} else if (len(data) == 1) {
 		answer = data[0].GetId()
 		question += fmt.Sprintf("Automatically selecting the only result available: %s (%s)\n", data[0].GetName(), data[0].GetId())
