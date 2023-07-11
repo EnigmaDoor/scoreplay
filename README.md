@@ -1,5 +1,5 @@
 # Scoreplay soccer API browser
-
+11;rgb:3030/0a0a/2424
 This is a short project demonstrating Scoreplay Soccer API usage
 
 ## Installing and building the project
@@ -12,13 +12,15 @@ Clone the github repository, input your own Scoreplay API_KEY, build and run the
 Available is a .env.example file for an easy first-use example  
 
 ## Usage
-After building the project, a binary is present to execute it. The main flow of the binary is to prompt the user successively to select a competition, a season and a competitor. There exists various ways and options to pre-emptively select or search for those resources. They can be seen in .env.example, ./scoreplay --help; and we provide a couple examples below:  
+After building the project, a binary is present to execute it. The main flow of the binary is to prompt the user successively to select a competition, a season and a competitor. There exists various ways and options to pre-emptively select or search for those resources. They can be seen in .env.example ; ./scoreplay --help ; and we provide a couple examples below:  
 > ./scoreplay --competition sr:competition:23755  
 > ./scoreplay --competition UEFA  
 > ./scoreplay --competition sr:competition:23755 --season 22  
 > ./scoreplay --competition sr:competition:23755 --season sr:season:89689 --competitor land  
 > ./scoreplay --competition UEFA --output test.json  
-> ./scoreplay --input test.json  
+> ./scoreplay --input test.json
+
+Configuration priority (the prior is overwritten by the later): .env < configs/api.env < CLI flags  
 
 ## Structure
 * pkg - Contains the code
