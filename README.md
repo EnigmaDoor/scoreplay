@@ -44,6 +44,7 @@ A simple architecture was selected. The usual code flow is as such:
 
 ## Possible ameliorations
 I kept the scope small, being more interested in generics usage that another feature in this project. However, if we were to scale up, here's a few avenues of improvements, by order of priority:
+* Test coverage. Unit test, notably on localStorage_test.go & apiCall_test.go. Whole CLI test through a testing package, executing the program with the exemples arguments and ensure the results are correct.
 * Factorizing InteractiveFetchData to avoid code repetition. The idea is explained more throughly in scoreplay.go, the comment leading to func InteractiveFetchData. This would lead to cleaner code and far easier adding of another resource to manage.
 * A (truly) interactive CLI prompt. When prompting the user for a choice, he can either arrow up or arrow down to select one of the options (5 displayed at any point, the selected + 2 below + 2 above), or write to automatically search within the dataset and only display matching names. ENTER to select. Arrow right could display more data related to the highlighted resource, and arrow left to go back to the selection menu.
 * Fully implement --input, disabling API calls and instead reusing a previous search (not interesting without the interactive CLI above). The file reading is implemented.
