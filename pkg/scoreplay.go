@@ -129,6 +129,8 @@ func InteractiveFetchData(opts *Options, data *SrData) (error) {
 	if (len(opts.Competitor) > 0 && len(idRegex.FindString(opts.Competitor)) > 0) {
 		data.CompetitorId = opts.Competitor
 		fmt.Println("Automatically selected competitor " + data.CompetitorId)
+		// As this is the final resource endpoint (for now), TODO implement GET on route
+		// baseRoute + "seasons/" + data.SeasonId + "/competitors/" + data.CompetitorId + "/statistics"
 	} else {
 		var competitors []Competitor;
 		route = baseRoute + "seasons/" + data.SeasonId + "/competitor_players"
