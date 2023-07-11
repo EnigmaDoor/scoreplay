@@ -1,5 +1,5 @@
 # Scoreplay soccer API browser
-11;rgb:3030/0a0a/2424
+
 This is a short project demonstrating Scoreplay Soccer API usage
 
 ## Installing and building the project
